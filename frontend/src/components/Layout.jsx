@@ -17,7 +17,6 @@ import {
   FileText,
   Brain,
   ClipboardList,
-  Warehouse,
   User,
   X,
   Check,

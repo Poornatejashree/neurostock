@@ -35,7 +35,6 @@ const NAV_MAIN = [
   { label: "Sales", icon: ShoppingCart, path: "/sales" },
   { label: "Analytics", icon: BarChart2, path: "/analytics" },
   { label: "AI Assistant", icon: Brain, path: "/ai" },
-  { label: "Excel Import", icon: FileSpreadsheet, path: "/import" },
 ];
 
 const NAV_MANAGE = [

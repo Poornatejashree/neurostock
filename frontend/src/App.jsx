@@ -14,9 +14,12 @@ import AIAssistant from "./pages/AIAssistant";
 import Profile from "./pages/Profile";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import DemandPrediction from "./pages/DemandPrediction";
 
 const P = ({ children }) => (
-  <ProtectedRoute><Layout>{children}</Layout></ProtectedRoute>
+  <ProtectedRoute>
+    <Layout>{children}</Layout>
+  </ProtectedRoute>
 );
 
 function App() {
@@ -24,18 +27,110 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/dashboard" element={<P><Dashboard /></P>} />
-        <Route path="/products" element={<P><Products /></P>} />
-        <Route path="/low-stock" element={<P><LowStock /></P>} />
-        <Route path="/sales" element={<P><Sales /></P>} />
-        <Route path="/analytics" element={<P><Analytics /></P>} />
-        <Route path="/suppliers" element={<P><Suppliers /></P>} />
-        <Route path="/reports" element={<P><Reports /></P>} />
-        <Route path="/users" element={<P><Users /></P>} />
-        <Route path="/settings" element={<P><Settings /></P>} />
-        <Route path="/audit" element={<P><AuditLogs /></P>} />
-        <Route path="/ai" element={<P><AIAssistant /></P>} />
-        <Route path="/profile" element={<P><Profile /></P>} />
+        <Route
+          path="/dashboard"
+          element={
+            <P>
+              <Dashboard />
+            </P>
+          }
+        />
+        <Route
+          path="/products"
+          element={
+            <P>
+              <Products />
+            </P>
+          }
+        />
+        <Route
+          path="/low-stock"
+          element={
+            <P>
+              <LowStock />
+            </P>
+          }
+        />
+        <Route
+          path="/sales"
+          element={
+            <P>
+              <Sales />
+            </P>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <P>
+              <Analytics />
+            </P>
+          }
+        />
+        <Route
+          path="/suppliers"
+          element={
+            <P>
+              <Suppliers />
+            </P>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <P>
+              <Reports />
+            </P>
+          }
+        />
+        <Route
+          path="/users"
+          element={
+            <P>
+              <Users />
+            </P>
+          }
+        />
+        <Route
+          path="/settings"
+          element={
+            <P>
+              <Settings />
+            </P>
+          }
+        />
+        <Route
+          path="/audit"
+          element={
+            <P>
+              <AuditLogs />
+            </P>
+          }
+        />
+        <Route
+          path="/ai"
+          element={
+            <P>
+              <AIAssistant />
+            </P>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <P>
+              <Profile />
+            </P>
+          }
+        />
+        <Route
+          path="/demand"
+          element={
+            <P>
+              <DemandPrediction />
+            </P>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

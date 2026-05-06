@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { getProducts, addProduct, updateProduct, deleteProduct } from "../utils/api";
-import { Plus, Search, Edit2, Trash2, X, Upload, Package } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, X, Upload, Package, ScanLine } from "lucide-react";
+import BarcodeScanner from "../components/BarcodeScanner";
 
 const CATEGORIES = ["Electronics","Accessories","Clothing","Food & Beverages","Office Supplies","Tools","Medicine","Other"];
 const WAREHOUSES = ["Warehouse A","Warehouse B","Store Front","Online","Hyderabad","Bangalore","Mumbai"];
@@ -24,6 +25,7 @@ function ProductModal({ product, onClose, onSave }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showScanner, setShowScanner] = useState(false);
   const fileRef = useRef();
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -34,6 +36,11 @@ function ProductModal({ product, onClose, onSave }) {
     const reader = new FileReader();
     reader.onload = (ev) => set("imageUrl", ev.target.result);
     reader.readAsDataURL(file);
+  };
+
+  const handleBarcodeScan = (code) => {
+    set("sku", code);
+    setShowScanner(false);
   };
 
   const handleSubmit = async () => {
@@ -49,108 +56,122 @@ function ProductModal({ product, onClose, onSave }) {
   };
 
   return (
-    <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className="modal modal--lg">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <div className="modal-title" style={{ marginBottom: 0 }}>{isEdit ? "Edit Product" : "Add New Product"}</div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}><X size={18} /></button>
-        </div>
+    <>
+      <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+        <div className="modal modal--lg">
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+            <div className="modal-title" style={{ marginBottom: 0 }}>{isEdit ? "Edit Product" : "Add New Product"}</div>
+            <button onClick={onClose} style={{ background: "none", border: "none", color: "var(--text-muted)", cursor: "pointer" }}><X size={18} /></button>
+          </div>
 
-        {error && <div className="error-box">⚠️ {error}</div>}
+          {error && <div className="error-box">⚠️ {error}</div>}
 
-        {/* Image Upload */}
-        <div className="form-group">
-          <label className="form-label">Product Image</label>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 64, height: 64, borderRadius: 10, background: "var(--bg-base)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
-              {form.imageUrl ? <img src={form.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Package size={24} color="var(--text-muted)" />}
+          {/* Image Upload */}
+          <div className="form-group">
+            <label className="form-label">Product Image</label>
+            <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ width: 64, height: 64, borderRadius: 10, background: "var(--bg-base)", border: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                {form.imageUrl ? <img src={form.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <Package size={24} color="var(--text-muted)" />}
+              </div>
+              <div>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileRef.current?.click()}>
+                  <Upload size={13} /> Upload Image
+                </button>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
+                <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 5 }}>PNG, JPG up to 2MB</div>
+              </div>
             </div>
-            <div>
-              <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileRef.current?.click()}>
-                <Upload size={13} /> Upload Image
-              </button>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleImageUpload} />
-              <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 5 }}>PNG, JPG up to 2MB</div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Product Name *</label>
+              <input className="form-input" placeholder="e.g. Wireless Headphones" value={form.name} onChange={(e) => set("name", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">SKU / Barcode</label>
+              <div style={{ display: "flex", gap: 6 }}>
+                <input className="form-input" placeholder="WH-001 or scan barcode" value={form.sku} onChange={(e) => set("sku", e.target.value)} style={{ flex: 1 }} />
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => setShowScanner(true)} title="Scan barcode">
+                  <ScanLine size={15} />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Product Name *</label>
-            <input className="form-input" placeholder="e.g. Wireless Headphones" value={form.name} onChange={(e) => set("name", e.target.value)} />
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Category</label>
+              <select className="form-select" value={form.category} onChange={(e) => set("category", e.target.value)}>
+                {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              </select>
+            </div>
+            <div className="form-group">
+              <label className="form-label">Warehouse / Location</label>
+              <select className="form-select" value={form.warehouse} onChange={(e) => set("warehouse", e.target.value)}>
+                {WAREHOUSES.map((w) => <option key={w}>{w}</option>)}
+              </select>
+            </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">SKU</label>
-            <input className="form-input" placeholder="WH-001" value={form.sku} onChange={(e) => set("sku", e.target.value)} />
-          </div>
-        </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Category</label>
-            <select className="form-select" value={form.category} onChange={(e) => set("category", e.target.value)}>
-              {CATEGORIES.map((c) => <option key={c}>{c}</option>)}
-            </select>
+          <div className="form-row-3">
+            <div className="form-group">
+              <label className="form-label">Selling Price ($) *</label>
+              <input className="form-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.price} onChange={(e) => set("price", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Cost Price ($)</label>
+              <input className="form-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={(e) => set("costPrice", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Quantity *</label>
+              <input className="form-input" type="number" min="0" placeholder="0" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} />
+            </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">Warehouse / Location</label>
-            <select className="form-select" value={form.warehouse} onChange={(e) => set("warehouse", e.target.value)}>
-              {WAREHOUSES.map((w) => <option key={w}>{w}</option>)}
-            </select>
-          </div>
-        </div>
 
-        <div className="form-row-3">
-          <div className="form-group">
-            <label className="form-label">Selling Price ($) *</label>
-            <input className="form-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.price} onChange={(e) => set("price", e.target.value)} />
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Reorder Level</label>
+              <input className="form-input" type="number" min="0" placeholder="10" value={form.reorderLevel} onChange={(e) => set("reorderLevel", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Supplier</label>
+              <input className="form-input" placeholder="Supplier name" value={form.supplier} onChange={(e) => set("supplier", e.target.value)} />
+            </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">Cost Price ($)</label>
-            <input className="form-input" type="number" min="0" step="0.01" placeholder="0.00" value={form.costPrice} onChange={(e) => set("costPrice", e.target.value)} />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Quantity *</label>
-            <input className="form-input" type="number" min="0" placeholder="0" value={form.quantity} onChange={(e) => set("quantity", e.target.value)} />
-          </div>
-        </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Reorder Level</label>
-            <input className="form-input" type="number" min="0" placeholder="10" value={form.reorderLevel} onChange={(e) => set("reorderLevel", e.target.value)} />
+          <div className="form-row">
+            <div className="form-group">
+              <label className="form-label">Batch / Lot Number</label>
+              <input className="form-input" placeholder="e.g. BATCH-A123" value={form.batchNumber} onChange={(e) => set("batchNumber", e.target.value)} />
+            </div>
+            <div className="form-group">
+              <label className="form-label">Expiry Date</label>
+              <input className="form-input" type="date" value={form.expiryDate} onChange={(e) => set("expiryDate", e.target.value)} />
+            </div>
           </div>
-          <div className="form-group">
-            <label className="form-label">Supplier</label>
-            <input className="form-input" placeholder="Supplier name" value={form.supplier} onChange={(e) => set("supplier", e.target.value)} />
-          </div>
-        </div>
 
-        <div className="form-row">
           <div className="form-group">
-            <label className="form-label">Batch / Lot Number</label>
-            <input className="form-input" placeholder="e.g. BATCH-A123" value={form.batchNumber} onChange={(e) => set("batchNumber", e.target.value)} />
+            <label className="form-label">Description</label>
+            <input className="form-input" placeholder="Short product description..." value={form.description} onChange={(e) => set("description", e.target.value)} />
           </div>
-          <div className="form-group">
-            <label className="form-label">Expiry Date</label>
-            <input className="form-input" type="date" value={form.expiryDate} onChange={(e) => set("expiryDate", e.target.value)} />
+
+          <div className="modal-actions">
+            <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
+            <button className="btn btn--primary" onClick={handleSubmit} disabled={loading}>
+              {loading ? "Saving..." : isEdit ? "Save Changes" : "Add Product"}
+            </button>
           </div>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label">Description</label>
-          <input className="form-input" placeholder="Short product description..." value={form.description} onChange={(e) => set("description", e.target.value)} />
-        </div>
-
-        <div className="modal-actions">
-          <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
-          <button className="btn btn--primary" onClick={handleSubmit} disabled={loading}>
-            {loading ? "Saving..." : isEdit ? "Save Changes" : "Add Product"}
-          </button>
         </div>
       </div>
-    </div>
+
+      {showScanner && (
+        <BarcodeScanner
+          onScan={handleBarcodeScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -192,12 +213,19 @@ export default function Products() {
   const [filterWarehouse, setFilterWarehouse] = useState("All");
   const [modalProduct, setModalProduct] = useState(undefined);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [showScanner, setShowScanner] = useState(false);
 
   const fetch = () => {
     setLoading(true);
     getProducts().then((r) => setProducts(r.data)).catch(console.error).finally(() => setLoading(false));
   };
   useEffect(() => { fetch(); }, []);
+
+  // When scanning from search bar — find product by SKU
+  const handleSearchScan = (code) => {
+    setSearch(code);
+    setShowScanner(false);
+  };
 
   const filtered = products.filter((p) => {
     const s = search.toLowerCase();
@@ -218,9 +246,14 @@ export default function Products() {
           <div className="page-title">Products</div>
           <div className="page-sub">{products.length} products · Value: ${totalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         </div>
-        <button className="btn btn--primary" onClick={() => setModalProduct(null)}>
-          <Plus size={16} /> Add Product
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button className="btn btn--ghost" onClick={() => setShowScanner(true)}>
+            <ScanLine size={16} /> Scan to Search
+          </button>
+          <button className="btn btn--primary" onClick={() => setModalProduct(null)}>
+            <Plus size={16} /> Add Product
+          </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -318,6 +351,9 @@ export default function Products() {
       {deleteTarget && (
         <DeleteModal product={deleteTarget} onClose={() => setDeleteTarget(null)}
           onConfirm={async () => { await deleteProduct(deleteTarget._id); setDeleteTarget(null); fetch(); }} />
+      )}
+      {showScanner && (
+        <BarcodeScanner onScan={handleSearchScan} onClose={() => setShowScanner(false)} />
       )}
     </div>
   );
